@@ -1,6 +1,6 @@
 #!/bin/bash
 
 # replace <source> and <destination> with the appropriate values for your environment
-rsync -avzh --exclude='.idea' --exclude='target' ~/Projects/telegram-bot-studyroom main@51.250.126.52:/home/main/projects
+rsync -avzh --exclude='.git' --exclude='.idea' --exclude='target' ~/Projects/telegram-bot-studyroom main@51.250.126.52:/home/main/projects
 
 

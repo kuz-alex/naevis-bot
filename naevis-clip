@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# check if workbench folder exists, create if it doesn't
+if [ ! -d "$HOME/.workbench" ]; then
+  mkdir "$HOME/.workbench"
+fi
+
+# Get the arguments
+link="$1"
+start="$2"
+end="$3"
+result_file_path="$4"
+
+# download video to workbench folder
+cd "$HOME/.workbench"
+
+yt-dlp -f 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best[height<=480]/best' \
+    --merge-output-format mp4 -o "source_${result_file_path}" "$link"
+
+# extract file name without extension
+file_name=$(basename "$link" | cut -d'.' -f1)
+
+# Cut the video with ffmpeg
+ffmpeg -ss $start -i "source_${result_file_path}" -to $end -c:v libx264 -c:a aac "${result_file_path}"
+
+# Remove the downloaded video file
+# rm video.*
+
