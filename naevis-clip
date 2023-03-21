@@ -5,6 +5,19 @@ if [ ! -d "$HOME/.workbench" ]; then
   mkdir "$HOME/.workbench"
 fi
 
+# Check if the required programs are installed
+if ! command -v yt-dlp &> /dev/null
+then
+    echo "yt-dlp could not be found. Please install it."
+    exit
+fi
+
+if ! command -v ffmpeg &> /dev/null
+then
+    echo "ffmpeg could not be found. Please install it."
+    exit
+fi
+
 # Get the arguments
 link="$1"
 start="$2"
@@ -15,13 +28,11 @@ result_file_path="$4"
 cd "$HOME/.workbench"
 
 yt-dlp -f 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best[height<=480]/best' \
+    --downloader ffmpeg --downloader-args "ffmpeg_i:-ss ${start} -to ${end} " \
     --merge-output-format mp4 -o "source_${result_file_path}" "$link"
 
-# extract file name without extension
-file_name=$(basename "$link" | cut -d'.' -f1)
-
-# Cut the video with ffmpeg
-ffmpeg -ss $start -i "source_${result_file_path}" -to $end -c:v libx264 -c:a aac "${result_file_path}"
+# Compress the video with ffmpeg
+ffmpeg -i "source_${result_file_path}" -vcodec h264 -s hd720 -crf 28 -acodec aac "${result_file_path}"
 
 # Remove the downloaded video file
 # rm video.*
