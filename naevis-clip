@@ -18,21 +18,71 @@ then
     exit
 fi
 
+download_video_clip() {
+  local link="$1"
+  local start="$2"
+  local end="$3"
+  local result_file_path="$4"
+
+  yt-dlp -f 'best[height<=720][ext=mp4]/best[height<=480][exp=mp4]' \
+    --downloader ffmpeg --downloader-args "ffmpeg_i:-ss ${start} -to ${end} " \
+    --merge-output-format mp4 -o "source_${result_file_path}" "$link"
+}
+
 # Get the arguments
 link="$1"
 start="$2"
 end="$3"
 result_file_path="$4"
 
+with_subs=0
+if [[ "$#" -eq 5 && "$5" == "--subs" ]]; then
+  with_subs=1
+fi
+
 # download video to workbench folder
 cd "$HOME/.workbench"
 
-yt-dlp -f 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best[height<=480]/best' \
-    --downloader ffmpeg --downloader-args "ffmpeg_i:-ss ${start} -to ${end} " \
-    --merge-output-format mp4 -o "source_${result_file_path}" "$link"
+# Remove the extension from the final filename
+result_file_name="${result_file_path%.*}"
 
-# Compress the video with ffmpeg
-ffmpeg -i "source_${result_file_path}" -vcodec h264 -s hd720 -crf 28 -acodec aac "${result_file_path}"
+if [[ $with_subs -eq 1 ]]; then
+  download_video_clip $link $start $end $result_file_path
+
+  # Download subs
+  yt-dlp --write-sub --sub-lang en --sub-format vtt --skip-download -o "${result_file_name}" "$link"
+
+  # Cut a clip from the subtitles file
+  ffmpeg -i "${result_file_name}.en.vtt" -ss ${start} -to ${end} -c copy "cut_subs_${result_file_name}.en.vtt"
+else
+  download_video_clip $link $start $end $result_file_path
+fi
+
+# Compressing and formatting the video.
+
+declare -a ffmpeg_args=()
+
+ffmpeg_args+=("-i" "source_${result_file_path}")
+
+if [[ $with_subs -eq 1 ]]; then
+  # Burning in the subs
+  ffmpeg_args+=("-vf" "subtitles=cut_subs_${result_file_name}.en.vtt")
+fi
+
+# Specifying encoding
+ffmpeg_args+=("-vcodec" "h264")
+ffmpeg_args+=("-crf" "27")
+ffmpeg_args+=("-acodec" "aac")
+
+# Limiting bitrate
+ffmpeg_args+=("-b:v" "1500k")
+ffmpeg_args+=("-maxrate" "1500k")
+ffmpeg_args+=("-bufsize" "3000k")
+
+ffmpeg_args+=("${result_file_path}")
+
+echo ${ffmpeg_args[@]}
+ffmpeg "${ffmpeg_args[@]}"
 
 # Remove the downloaded video file
 # rm video.*

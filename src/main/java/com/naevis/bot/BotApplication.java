@@ -1,21 +1,12 @@
 package com.naevis.bot;
 
 import java.io.File;
-import java.io.IOException;
-import java.sql.SQLOutput;
 import java.util.Arrays;
-import java.util.List;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.regex.Pattern;
 
 import com.naevis.bot.service.YoutubeClipperService;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -40,8 +31,7 @@ public class BotApplication {
 			// Register long polling bots. They work regardless type of TelegramBotsApi we are creating
 			botsApi.registerBot(new StudyTrackerBot());
 		} catch (Exception e) {
-			System.out.println("Error222: " + e.toString());
-			// BotLogger.error(LOGTAG, e);
+			System.out.println(e);
 		}
 
 		SpringApplication.run(BotApplication.class, args);
@@ -83,12 +73,13 @@ public class BotApplication {
 			String end = parts[3];
 			String[] rest = Arrays.copyOfRange(parts, 4, parts.length); // tags
 
-			if (!cmd.matches("/clip")) { return; }
+			if (!cmd.matches("/clip") && !cmd.matches("/clip_subs")) { return; }
 
-			System.out.println("list: " + cmd + " , " + link + " , " + start + " , " + end + ", " + rest.toString());
+			System.out.println("list: " + cmd + " , " + link + " , " + start + " , " + end + ", " + Arrays.toString(rest));
 
 			try {
-				String fullPath = new YoutubeClipperService().clipVideo(link, start, end);
+				Boolean withSubs = cmd.matches("/clip_subs");
+				String fullPath = new YoutubeClipperService().clipVideo(link, start, end, withSubs);
 
 				SendVideo outMessage = new SendVideo();
 				outMessage.setChatId(update.getMessage().getChatId().toString());
