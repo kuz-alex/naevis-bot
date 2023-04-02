@@ -1,6 +1,7 @@
 package com.naevis.bot.command;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 
 import com.naevis.bot.service.YoutubeClipperService;
+import org.telegram.telegrambots.meta.bots.AbsSender;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Component
 @Slf4j
@@ -26,8 +29,9 @@ public class ClipCommand extends BotCommand implements ICommand {
             • `tag1, tag2, ...` - необязательные теги для описания видео
             """;
 
-    public static String commandName = "/clip";
-    public static String description = String.format("Команда для вырезки клипа из видео на YouTube. (Использование: /help %s)", commandName);
+    public static String commandName = "clip";
+    public static String description = String.format("Команда для вырезки клипа из видео на YouTube. (Использование: " +
+                                                     "/help %s)", commandName);
 
     public ClipCommand() {
         super(commandName, description);
@@ -42,10 +46,12 @@ public class ClipCommand extends BotCommand implements ICommand {
     }
 
     @Override
-    public SendVideo processCommand(String[] args, Message message) {
+    public void processCommand(String[] args, Message message, AbsSender bot) throws TelegramApiException {
         log.info("Processing: {}", Arrays.toString(args));
 
-        if (args.length < 4) { return null; }
+        if (args.length < 3) {
+            return;
+        }
 
         String link = args[0];
         String start = args[1];
@@ -55,15 +61,14 @@ public class ClipCommand extends BotCommand implements ICommand {
         try {
             String fullPath = new YoutubeClipperService().clipVideo(link, start, end, false);
 
-            return SendVideo.builder()
+            bot.execute(SendVideo.builder()
                     .chatId(message.getChatId().toString())
                     .supportsStreaming(Boolean.TRUE)
                     .caption(formatTags(rest))
                     .video(new InputFile(new File(fullPath)))
-                    .build();
-        } catch (Exception e) {
+                    .build());
+        } catch (IOException | InterruptedException e) {
             log.error("Error processing a video: {}", e.toString());
-            throw new RuntimeException(e);
         }
     }
 

@@ -38,7 +38,7 @@ public class StudyBot extends TelegramLongPollingBot {
 
         try {
             List<BotCommand> botCommands = iCommands.stream()
-                    .map(cmd -> new BotCommand(cmd.getCommandName(), cmd.getDescription()))
+                    .map(cmd -> new BotCommand("/" +cmd.getCommandName(), cmd.getDescription()))
                     .collect(Collectors.toList());
 
             execute(new SetMyCommands(botCommands, new BotCommandScopeDefault(), "en"));
@@ -67,7 +67,7 @@ public class StudyBot extends TelegramLongPollingBot {
         String[] commandArgs = Arrays.copyOfRange(parts, 1, parts.length);
 
         try {
-            execute(cmd.processCommand(commandArgs, update.getMessage()));
+            cmd.processCommand(commandArgs, update.getMessage(), this);
         } catch (TelegramApiException e) {
             SendMessage message = new SendMessage();
             message.setChatId(update.getMessage().getChatId().toString());
