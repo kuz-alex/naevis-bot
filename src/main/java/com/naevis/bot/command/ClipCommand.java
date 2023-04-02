@@ -23,26 +23,30 @@ public class ClipCommand extends BotCommand implements ICommand {
             `/clip video_id start end tag1 tag2 ...`
                            
             Аргументы:
-            • `video_id - ссылка или строчка после v= из ссылки на видео на YouTube (например, dQw4w9WgXcQ из ссылки https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+            • `video_id` - ссылка или строчка после v= из ссылки на видео на YouTube (например, dQw4w9WgXcQ из ссылки https://www.youtube.com/watch?v=dQw4w9WgXcQ)
             • `start` - время начала вырезки в формате минуты:секунды.миллисекунды, например `2:39.89`
             • `end` - время конца вырезки в формате минуты:секунды.миллисекунды, например `3:29.00`
             • `tag1, tag2, ...` - необязательные теги для описания видео
             """;
 
-    public static String commandName = "clip";
-    public static String description = String.format("Команда для вырезки клипа из видео на YouTube. (Использование: " +
-                                                     "/help %s)", commandName);
+    public static String COMMAND_NAME = "clip";
+    public static String DESCRIPTION = String.format("Команда для вырезки клипа из видео на YouTube. (Использование: " +
+                                                     "/help %s)", COMMAND_NAME);
 
     public ClipCommand() {
-        super(commandName, description);
+        super(COMMAND_NAME, DESCRIPTION);
     }
 
     public String getCommandName() {
-        return commandName;
+        return COMMAND_NAME;
     }
 
     public String getDescription() {
-        return description;
+        return DESCRIPTION;
+    }
+
+    public String getUsage() {
+        return USAGE;
     }
 
     @Override

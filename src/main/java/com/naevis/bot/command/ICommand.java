@@ -11,4 +11,5 @@ public interface ICommand {
     void processCommand (String[] args, Message message, AbsSender bot) throws TelegramApiException;
     String getCommandName();
     String getDescription();
+    String getUsage();
 }

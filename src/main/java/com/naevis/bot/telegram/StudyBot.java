@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
@@ -31,15 +32,20 @@ public class StudyBot extends TelegramLongPollingBot {
     }
 
     @Autowired
-    public StudyBot(@Value("${telegram.bot.token}") String botToken, ClipCommand clipCommand, ClipSubsCommand clipSubsCommand) {
+    public StudyBot(@Value("${telegram.bot.token}") String botToken, ClipCommand clipCommand,
+                    ClipSubsCommand clipSubsCommand) {
         super(botToken);
 
         iCommands = Arrays.asList(clipCommand, clipSubsCommand);
 
         try {
             List<BotCommand> botCommands = iCommands.stream()
-                    .map(cmd -> new BotCommand("/" +cmd.getCommandName(), cmd.getDescription()))
+                    .map(cmd -> new BotCommand("/" + cmd.getCommandName(), cmd.getDescription()))
                     .collect(Collectors.toList());
+
+            botCommands.add(new BotCommand("/help", "Команда \"help\" выводит информацию об использовании других " +
+                                                    "команд. Например, для получения помощи по команде \"clip\" " +
+                                                    "нужно написать \"/help clip\"."));
 
             execute(new SetMyCommands(botCommands, new BotCommandScopeDefault(), "en"));
         } catch (TelegramApiException e) {
@@ -59,6 +65,11 @@ public class StudyBot extends TelegramLongPollingBot {
         String[] parts = input.split("\\s+");
 
         String commandName = parts[0];
+        if (commandName.equals("/help") && parts[1] != null) {
+            processHelpCommand(parts[1], update.getMessage());
+            return;
+        }
+
         ICommand cmd = getCommand(commandName);
         if (cmd == null) {
             return;
@@ -81,9 +92,28 @@ public class StudyBot extends TelegramLongPollingBot {
         }
     }
 
+    private void processHelpCommand(String commandToDisplayUsage, Message message) {
+        ICommand command = getCommand(commandToDisplayUsage);
+        if (command == null) {
+            return;
+        }
+
+        try {
+            execute(SendMessage.builder()
+                    .chatId(message.getChatId())
+                    .text(command.getUsage())
+                    .disableWebPagePreview(Boolean.TRUE)
+                    .build());
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private ICommand getCommand(String commandName) {
+        String commandNameWithoutSlash = commandName.startsWith("/") ? commandName.substring(1) : commandName;
+
         for (ICommand cmd : iCommands) {
-            if (cmd.getCommandName().equals(commandName)) {
+            if (cmd.getCommandName().equals(commandNameWithoutSlash)) {
                 return cmd;
             }
         }

@@ -19,7 +19,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Slf4j
 public class ClipSubsCommand extends BotCommand implements ICommand {
     public static String USAGE = """
-            Команда для вырезки клипа:
+            Команда для вырезки клипа с субтитрами:
             `/clip_subs video_id start end tag1 tag2 ...`
                            
             Аргументы:
@@ -29,19 +29,23 @@ public class ClipSubsCommand extends BotCommand implements ICommand {
             • `tag1, tag2, ...` - необязательные теги для описания видео
             """;
 
-    public static String commandName = "clip_subs";
-    public static String description = String.format("Команда для вырезки клипа из видео на YouTube с субтитрами (hardsub). (Использование: /help %s)", commandName);
+    public static String COMMAND_NAME = "clip_subs";
+    public static String DESCRIPTION = String.format("Команда для вырезки клипа из видео на YouTube с субтитрами (hardsub). (Использование: /help %s)", COMMAND_NAME);
 
     public ClipSubsCommand() {
-        super(commandName, description);
+        super(COMMAND_NAME, DESCRIPTION);
     }
 
     public String getCommandName() {
-        return commandName;
+        return COMMAND_NAME;
     }
 
     public String getDescription() {
-        return description;
+        return DESCRIPTION;
+    }
+
+    public String getUsage() {
+        return USAGE;
     }
 
     @Override
