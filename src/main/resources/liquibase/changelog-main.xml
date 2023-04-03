@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+
+    <changeSet id="1" author="kuz-alex">
+        <createTable tableName="rooms">
+            <column name="room_id" type="INT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="kuz-alex">
+        <createTable tableName="users">
+            <column name="user_id" type="INT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="room_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="joined_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="3" author="kuz-alex">
+        <createTable tableName="sessions">
+            <column name="session_id" type="INT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_time" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_time" type="TIMESTAMP"/>
+            <column name="progress" type="VARCHAR(255)"/>
+            <column name="rating" type="INT"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

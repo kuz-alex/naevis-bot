@@ -1,11 +1,10 @@
 package com.naevis.bot;
 
+import com.naevis.bot.telegram.StudyBot;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-
-import com.naevis.bot.telegram.StudyBot;
 
 @SpringBootApplication
 public class BotApplication {

@@ -18,7 +18,7 @@ public class YoutubeClipperService {
         String resultFileName = UUID.randomUUID() + ".mp4";
 
         String subsParam = withSubs ? " --subs" : "";
-        String[] cmd = {"/bin/bash", "-c", "~/.bin/naevis-clip " + link + " " + start + " " + end + " " + resultFileName + subsParam};
+        String[] cmd = {"/bin/bash", "-c", "yes N | ~/.bin/naevis-clip " + link + " " + start + " " + end + " " + resultFileName + subsParam};
 
         Process process = Runtime.getRuntime().exec(cmd);
         int exitCode = process.waitFor();
