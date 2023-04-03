@@ -4,11 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.naevis.bot.command.ClipCommand;
-import com.naevis.bot.command.ClipSubsCommand;
 import com.naevis.bot.command.ICommand;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -24,22 +21,19 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Component
 @Slf4j
 public class StudyBot extends TelegramLongPollingBot {
-    private final List<ICommand> iCommands;
+    private final List<ICommand> commands;
 
     @Override
     public String getBotUsername() {
         return "naevisRecallBot";
     }
 
-    @Autowired
-    public StudyBot(@Value("${telegram.bot.token}") String botToken, ClipCommand clipCommand,
-                    ClipSubsCommand clipSubsCommand) {
+    public StudyBot(@Value("${telegram.bot.token}") String botToken, List<ICommand> commands) {
         super(botToken);
-
-        iCommands = Arrays.asList(clipCommand, clipSubsCommand);
+        this.commands = commands;
 
         try {
-            List<BotCommand> botCommands = iCommands.stream()
+            List<BotCommand> botCommands = commands.stream()
                     .map(cmd -> new BotCommand("/" + cmd.getCommandName(), cmd.getDescription()))
                     .collect(Collectors.toList());
 
@@ -112,7 +106,7 @@ public class StudyBot extends TelegramLongPollingBot {
     private ICommand getCommand(String commandName) {
         String commandNameWithoutSlash = commandName.startsWith("/") ? commandName.substring(1) : commandName;
 
-        for (ICommand cmd : iCommands) {
+        for (ICommand cmd : commands) {
             if (cmd.getCommandName().equals(commandNameWithoutSlash)) {
                 return cmd;
             }
