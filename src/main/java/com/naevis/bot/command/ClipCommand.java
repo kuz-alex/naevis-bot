@@ -62,7 +62,7 @@ public class ClipCommand extends BotCommand implements ICommand {
         String[] rest = Arrays.copyOfRange(args, 3, args.length); // tags
 
         try {
-            String fullPath = new YoutubeClipperService().clipVideo(link, start, end, false);
+            String fullPath = new YoutubeClipperService().clipVideo(link, start, end, false, false);
 
             bot.execute(SendVideo.builder()
                     .chatId(message.getChatId().toString())

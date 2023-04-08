@@ -40,6 +40,11 @@ if [[ "$#" -eq 5 && "$5" == "--subs" ]]; then
   with_subs=1
 fi
 
+with_gif=0
+if [[ "$#" -eq 5 && "$5" == "--gif" ]]; then
+  with_gif=1
+fi
+
 # download video to workbench folder
 cd "$HOME/.workbench"
 
@@ -72,12 +77,13 @@ fi
 # Specifying encoding
 ffmpeg_args+=("-vcodec" "h264")
 ffmpeg_args+=("-crf" "27")
-ffmpeg_args+=("-acodec" "aac")
 
-# Limiting bitrate
-ffmpeg_args+=("-b:v" "1500k")
-ffmpeg_args+=("-maxrate" "1500k")
-ffmpeg_args+=("-bufsize" "3000k")
+if [[ $with_gif -eq 1 ]]; then
+  # Muting the audio
+  ffmpeg_args+=("-an")
+else
+  ffmpeg_args+=("-acodec" "aac")
+fi
 
 ffmpeg_args+=("${result_file_path}")
 

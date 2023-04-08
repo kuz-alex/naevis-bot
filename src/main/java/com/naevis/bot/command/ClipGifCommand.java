@@ -7,7 +7,7 @@ import java.util.Arrays;
 import com.naevis.bot.service.YoutubeClipperService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
+import org.telegram.telegrambots.meta.api.methods.send.SendAnimation;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
@@ -16,22 +16,23 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Component
 @Slf4j
-public class ClipSubsCommand extends BotCommand implements ICommand {
+public class ClipGifCommand extends BotCommand implements ICommand {
     public static String USAGE = """
-            Команда для вырезки клипа с субтитрами:
-            `/clip_subs video_id start end tag1 tag2 ...`
+            Команда для вырезки клипа в gif формате:
+            `/clip_gif video_id start end tag1 tag2 ...`
                            
             Аргументы:
-            • `video_id - ссылка или строчка после v= из ссылки на видео на YouTube (например, dQw4w9WgXcQ из ссылки https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+            • `video_id` - ссылка или строчка после v= из ссылки на видео на YouTube (например, dQw4w9WgXcQ из ссылки https://www.youtube.com/watch?v=dQw4w9WgXcQ)
             • `start` - время начала вырезки в формате минуты:секунды.миллисекунды, например `2:39.89`
             • `end` - время конца вырезки в формате минуты:секунды.миллисекунды, например `3:29.00`
             • `tag1, tag2, ...` - необязательные теги для описания видео
             """;
 
-    public static String COMMAND_NAME = "clip_subs";
-    public static String DESCRIPTION = String.format("Команда для вырезки клипа из видео на YouTube с субтитрами (hardsub). (Использование: /help %s)", COMMAND_NAME);
+    public static String COMMAND_NAME = "clip_gif";
+    public static String DESCRIPTION = String.format("Команда для вырезки клипа из видео на YouTube. (Использование: " +
+                                                     "/help %s)", COMMAND_NAME);
 
-    public ClipSubsCommand() {
+    public ClipGifCommand() {
         super(COMMAND_NAME, DESCRIPTION);
     }
 
@@ -61,13 +62,12 @@ public class ClipSubsCommand extends BotCommand implements ICommand {
         String[] rest = Arrays.copyOfRange(args, 3, args.length); // tags
 
         try {
-            String fullPath = new YoutubeClipperService().clipVideo(link, start, end, true, false);
+            String fullPath = new YoutubeClipperService().clipVideo(link, start, end, false, true);
 
-            bot.execute(SendVideo.builder()
+            bot.execute(SendAnimation.builder()
                     .chatId(message.getChatId().toString())
-                    .supportsStreaming(Boolean.TRUE)
+                    .animation(new InputFile(new File(fullPath)))
                     .caption(formatTags(rest))
-                    .video(new InputFile(new File(fullPath)))
                     .build());
         } catch (IOException | InterruptedException e) {
             log.error("Error processing a video: {}", e.toString());
