@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import com.naevis.bot.service.YoutubeClipperService;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
@@ -17,20 +18,20 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Component
 @Slf4j
 public class ClipCommand extends BotCommand implements ICommand {
-    public static String USAGE = """
+    public static final String COMMAND_NAME = "clip";
+    public static final String DESCRIPTION = String.format("Вырезать клип из ютуб видео. (Использование: " +
+                                                     "/help %s)", COMMAND_NAME);
+    public static final String USAGE = String.format("""
             Команда для вырезки клипа:
-            `/clip video_id start end tag1 tag2 ...`
+            `%s video_id start end tag1 tag2 ...`
                            
             Аргументы:
             • `video_id` - ссылка или строчка после v= из ссылки на видео на YouTube (например, dQw4w9WgXcQ из ссылки https://www.youtube.com/watch?v=dQw4w9WgXcQ)
             • `start` - время начала вырезки в формате минуты:секунды.миллисекунды, например `2:39.89`
             • `end` - время конца вырезки в формате минуты:секунды.миллисекунды, например `3:29.00`
             • `tag1, tag2, ...` - необязательные теги для описания видео
-            """;
+            """, COMMAND_NAME);
 
-    public static String COMMAND_NAME = "clip";
-    public static String DESCRIPTION = String.format("Команда для вырезки клипа из видео на YouTube. (Использование: " +
-                                                     "/help %s)", COMMAND_NAME);
 
     public ClipCommand() {
         super(COMMAND_NAME, DESCRIPTION);
@@ -40,7 +41,7 @@ public class ClipCommand extends BotCommand implements ICommand {
         return COMMAND_NAME;
     }
 
-    public String getDescription() {
+    public @NonNull String getDescription() {
         return DESCRIPTION;
     }
 

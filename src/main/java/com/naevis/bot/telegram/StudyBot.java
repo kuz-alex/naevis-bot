@@ -21,14 +21,17 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Slf4j
 public class StudyBot extends TelegramLongPollingBot {
     private final List<ICommand> commands;
+    private final String botName;
 
     @Override
     public String getBotUsername() {
-        return "naevisRecallBot";
+        return botName;
     }
 
-    public StudyBot(@Value("${telegram.bot.token}") String botToken, List<ICommand> commands) {
+    public StudyBot(@Value("${telegram.bot.token}") String botToken, @Value("${telegram.bot.name}") String botName,
+                    List<ICommand> commands) {
         super(botToken);
+        this.botName = botName;
         this.commands = commands;
 
         try {

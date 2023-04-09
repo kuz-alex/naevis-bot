@@ -3,46 +3,74 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
 
-    <changeSet id="1" author="kuz-alex">
+    <changeSet id="app-users-table" author="kuz-alex">
+        <createTable tableName="app_users">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="telegram_id" type="bigint">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="username" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createSequence sequenceName="user_id_seq" startValue="1" incrementBy="1" />
+    </changeSet>
+
+    <changeSet id="rooms-table" author="kuz-alex">
         <createTable tableName="rooms">
-            <column name="room_id" type="INT">
+            <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="created_at" type="TIMESTAMP">
+            <column name="name" type="varchar(255)"/>
+            <column name="owner_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_rooms_owner" references="app_users(id)" />
+            </column>
+            <column name="created_at" type="timestamp" defaultValue="now()">
                 <constraints nullable="false"/>
             </column>
         </createTable>
+
+        <createSequence sequenceName="room_id_seq" startValue="1" incrementBy="1" />
     </changeSet>
 
-    <changeSet id="2" author="kuz-alex">
-        <createTable tableName="users">
-            <column name="user_id" type="INT">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="room_id" type="INT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="joined_at" type="TIMESTAMP">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-    </changeSet>
-
-    <changeSet id="3" author="kuz-alex">
+    <changeSet id="sessions-table" author="kuz-alex">
         <createTable tableName="sessions">
-            <column name="session_id" type="INT">
+            <column name="id" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="user_id" type="INT">
+            <column name="duration_sec" type="int" defaultValueNumeric="50">
                 <constraints nullable="false"/>
             </column>
-            <column name="start_time" type="TIMESTAMP">
+            <column name="user_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_sessions_user" references="app_users(id)" />
+            </column>
+            <column name="started_at" type="timestamp" defaultValue="now()">
                 <constraints nullable="false"/>
             </column>
-            <column name="end_time" type="TIMESTAMP"/>
-            <column name="progress" type="VARCHAR(255)"/>
-            <column name="rating" type="INT"/>
+        </createTable>
+
+        <createSequence sequenceName="session_id_seq" startValue="1" incrementBy="1" />
+    </changeSet>
+
+    <changeSet id="app-user-rooms-table" author="kuz-alex">
+        <createTable tableName="app_users_rooms">
+            <column name="app_user_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_user_rooms_user" references="app_users(id)" />
+            </column>
+            <column name="room_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_user_rooms_room" references="rooms(id)" />
+            </column>
+            <column name="created_at" type="timestamp" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
+
 
 </databaseChangeLog>
