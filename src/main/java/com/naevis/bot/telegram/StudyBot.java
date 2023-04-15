@@ -43,7 +43,7 @@ public class StudyBot extends TelegramLongPollingBot {
                                                     "команд. Например, для получения помощи по команде \"clip\" " +
                                                     "нужно написать \"/help clip\"."));
 
-            execute(new SetMyCommands(botCommands, new BotCommandScopeDefault(), "en"));
+            execute(new SetMyCommands(botCommands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {
             log.error("Error on bot startup: {}", e.getMessage());
             throw new RuntimeException(e);

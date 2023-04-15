@@ -44,7 +44,7 @@ public class StartCommand extends BotCommand implements ICommand {
 
         SendMessage result = SendMessage.builder()
                 .chatId(message.getChatId().toString())
-                .text("Теперь вы можете использовать все возможности бота.")
+                .text("Вы можете использовать все возможности бота.")
                 .build();
         bot.execute(result);
     }

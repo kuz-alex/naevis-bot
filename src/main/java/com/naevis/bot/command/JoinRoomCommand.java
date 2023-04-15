@@ -1,10 +1,12 @@
 package com.naevis.bot.command;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.naevis.bot.model.AppUser;
-import com.naevis.bot.model.Session;
+import com.naevis.bot.model.Room;
 import com.naevis.bot.repository.AppUserRepository;
+import com.naevis.bot.repository.RoomRepository;
 import com.naevis.bot.service.SessionService;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -24,32 +26,49 @@ public class JoinRoomCommand extends BotCommand implements ICommand {
                                        "`!join_room 23` для 60-минутной учебной сессии. По умолчанию время сессии 90 " +
                                        "минут.";
 
-    private final SessionService sessionService;
     private final AppUserRepository appUserRepository;
+    private final RoomRepository roomRepository;
 
-    public JoinRoomCommand(AppUserRepository appUserRepository, SessionService sessionService) {
+    public JoinRoomCommand(AppUserRepository appUserRepository, RoomRepository roomRepository) {
         super(COMMAND_NAME, DESCRIPTION);
         this.appUserRepository = appUserRepository;
-        this.sessionService = sessionService;
+        this.roomRepository = roomRepository;
     }
 
     @Override
     public void processCommand(String[] args, Message message, AbsSender bot) throws TelegramApiException {
+        if (args.length == 0) {
+            bot.execute(this.buildMessage(message, "Код комнаты должен быть передан первым аргументом"));
+            return;
+        }
+
+        String roomId = args[0];
+        Optional<Room> roomOptional = roomRepository.findByIdWithJoinedUsers(Long.valueOf(roomId));
+
+        if (roomOptional.isEmpty()) {
+            bot.execute(this.buildMessage(message, String.format(
+                    "Не удалось найти комнату по коду %s", roomId)));
+            return;
+        }
+
         Long telegramUserId = message.getFrom().getId();
         Optional<AppUser> appUserOptional = appUserRepository.findByTelegramId(telegramUserId);
 
         if (appUserOptional.isEmpty()) {
-            bot.execute(SendMessage.builder()
-                    .chatId(message.getChatId().toString())
-                    .text("Для доступа к этому функционалу выполните команду `start`")
-                    .build()
-            );
+            bot.execute(this.buildMessage(message, "Для доступа к этому функционалу выполните команду `start`"));
             return;
         }
 
-        AppUser user = appUserOptional.get();
-        Session session = sessionService.createSession(user, "testeroni");
-        System.out.println("555test: " + session.getName() + ", " + session.getDurationMin());
+        Room room = roomOptional.get();
+        room.getJoinedUsers().add(appUserOptional.get());
+        roomRepository.save(room);
+    }
+
+    private SendMessage buildMessage(Message message, String text) {
+        return SendMessage.builder()
+                .chatId(message.getChatId().toString())
+                .text(text)
+                .build();
     }
 
     @Override

@@ -20,7 +20,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 public class CreateRoomCommand extends BotCommand implements ICommand {
     public static final String COMMAND_NAME = "create_room";
     public static final String DESCRIPTION = "Создать комнату для учебы";
-    public static final String USAGE = "Создаём комнату с `/create_room`, после чего бот выдаст room_id," +
+    public static final String USAGE = "Создаём комнату с `/create_room <name>`, после чего бот выдаст room_id," +
                                        "который отправляем участникам для подключения к комнате (`/join_room <room_id>`)";
 
     private final AppUserRepository appUserRepository;
@@ -35,29 +35,31 @@ public class CreateRoomCommand extends BotCommand implements ICommand {
     @Override
     public void processCommand(String[] args, Message message, AbsSender bot) throws TelegramApiException {
         if (args.length == 0) {
+            bot.execute(this.buildMessage(message, "Название комнаты должно быть передано первым аргументом"));
             return;
         }
+        String roomName = args[0];
 
         Long telegramUserId = message.getFrom().getId();
         Optional<AppUser> appUserOptional = appUserRepository.findByTelegramId(telegramUserId);
 
         if (appUserOptional.isEmpty()) {
-            bot.execute(SendMessage.builder()
-                    .chatId(message.getChatId().toString())
-                    .text("Для доступа к этому функционалу выполните команду `start`")
-                    .build()
-            );
+            // TODO: Create user here.
+            bot.execute(this.buildMessage(message,"Для доступа к этому функционалу выполните команду `start`"));
             return;
         }
 
         AppUser user = appUserOptional.get();
-        Room createdRoom = roomService.createRoom(user, args[0]);
+        Room createdRoom = roomService.createRoom(user, roomName);
 
-        bot.execute(SendMessage.builder()
+        bot.execute(this.buildMessage(message, String.format("Ваш код комнаты: %s", createdRoom.getId())));
+    }
+
+    private SendMessage buildMessage(Message message, String text) {
+        return SendMessage.builder()
                 .chatId(message.getChatId().toString())
-                .text(String.format("Ваш код комнаты: %s", createdRoom.getId()))
-                .build()
-        );
+                .text(text)
+                .build();
     }
 
     @Override

@@ -16,11 +16,11 @@ public class SessionService {
         this.sessionRepository = sessionRepository;
     }
 
-    public Session createSession(AppUser user, String name) {
+    public Session createSession(AppUser user, String name, Integer duration) {
         return sessionRepository.save(Session.builder()
                 .name(name)
                 .user(user)
-                .durationMin(90)
+                .durationMin(duration != null ? duration : 90)
                 .build()
         );
     }

@@ -71,5 +71,13 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="unique-constraint" author="kuz-alex">
+        <addUniqueConstraint
+                constraintName="unique_user_room"
+                tableName="app_users_rooms"
+                columnNames="app_user_id,room_id"
+        />
+    </changeSet>
+
 
 </databaseChangeLog>
