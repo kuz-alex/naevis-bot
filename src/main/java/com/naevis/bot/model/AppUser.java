@@ -27,7 +27,7 @@ public class AppUser {
     @Column(name = "username")
     private String userName;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "app_users_rooms",
             joinColumns = @JoinColumn(name = "app_user_id"),

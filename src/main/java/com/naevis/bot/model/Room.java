@@ -28,7 +28,12 @@ public class Room {
     @JoinColumn(name = "owner_id", referencedColumnName = "id")
     private AppUser owner;
 
-    @ManyToMany(mappedBy = "rooms")
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "app_users_rooms",
+            joinColumns = @JoinColumn(name = "room_id"),
+            inverseJoinColumns = @JoinColumn(name = "app_user_id")
+    )
     List<AppUser> joinedUsers;
 
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)

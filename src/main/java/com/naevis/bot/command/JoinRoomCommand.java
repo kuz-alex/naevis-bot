@@ -3,9 +3,9 @@ package com.naevis.bot.command;
 import java.util.Optional;
 
 import com.naevis.bot.model.AppUser;
-import com.naevis.bot.model.Room;
+import com.naevis.bot.model.Session;
 import com.naevis.bot.repository.AppUserRepository;
-import com.naevis.bot.service.RoomService;
+import com.naevis.bot.service.SessionService;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -17,27 +17,24 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Component
 @Slf4j
-public class CreateRoomCommand extends BotCommand implements ICommand {
-    public static final String COMMAND_NAME = "create_room";
-    public static final String DESCRIPTION = "Создать комнату для учебы";
-    public static final String USAGE = "Создаём комнату с `/create_room`, после чего бот выдаст room_id," +
-                                       "который отправляем участникам для подключения к комнате (`/join_room <room_id>`)";
+public class JoinRoomCommand extends BotCommand implements ICommand {
+    public static final String COMMAND_NAME = "join_room";
+    public static final String DESCRIPTION = "Зайти в комнату для учебы";
+    public static final String USAGE = "`!join_room <room_id>`, где `min` необязательный параметр кол-ва минут. Например, " +
+                                       "`!join_room 23` для 60-минутной учебной сессии. По умолчанию время сессии 90 " +
+                                       "минут.";
 
+    private final SessionService sessionService;
     private final AppUserRepository appUserRepository;
-    private final RoomService roomService;
 
-    public CreateRoomCommand(AppUserRepository appUserRepository, RoomService roomService) {
+    public JoinRoomCommand(AppUserRepository appUserRepository, SessionService sessionService) {
         super(COMMAND_NAME, DESCRIPTION);
         this.appUserRepository = appUserRepository;
-        this.roomService = roomService;
+        this.sessionService = sessionService;
     }
 
     @Override
     public void processCommand(String[] args, Message message, AbsSender bot) throws TelegramApiException {
-        if (args.length == 0) {
-            return;
-        }
-
         Long telegramUserId = message.getFrom().getId();
         Optional<AppUser> appUserOptional = appUserRepository.findByTelegramId(telegramUserId);
 
@@ -51,13 +48,8 @@ public class CreateRoomCommand extends BotCommand implements ICommand {
         }
 
         AppUser user = appUserOptional.get();
-        Room createdRoom = roomService.createRoom(user, args[0]);
-
-        bot.execute(SendMessage.builder()
-                .chatId(message.getChatId().toString())
-                .text(String.format("Ваш код комнаты: %s", createdRoom.getId()))
-                .build()
-        );
+        Session session = sessionService.createSession(user, "testeroni");
+        System.out.println("555test: " + session.getName() + ", " + session.getDurationMin());
     }
 
     @Override
