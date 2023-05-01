@@ -4,9 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.naevis.bot.command.ICommand;
+import com.naevis.bot.command.AbstractBotCommand;
+import com.naevis.bot.properties.TelegramProperties;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
@@ -20,18 +21,19 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Component
 @Slf4j
 public class StudyBot extends TelegramLongPollingBot {
-    private final List<ICommand> commands;
+    private final List<AbstractBotCommand> commands;
     private final String botName;
+    private final TelegramProperties properties;
 
     @Override
     public String getBotUsername() {
         return botName;
     }
 
-    public StudyBot(@Value("${telegram.bot.token}") String botToken, @Value("${telegram.bot.name}") String botName,
-                    List<ICommand> commands) {
-        super(botToken);
-        this.botName = botName;
+    public StudyBot(TelegramProperties properties, List<AbstractBotCommand> commands) {
+        super(properties.getToken());
+        this.properties = properties;
+        this.botName = properties.getName();
         this.commands = commands;
 
         try {
@@ -45,15 +47,14 @@ public class StudyBot extends TelegramLongPollingBot {
 
             execute(new SetMyCommands(botCommands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {
-            log.error("Error on bot startup: {}", e.getMessage());
-            throw new RuntimeException(e);
+            log.error("Couldn't update bot commands through SetMyCommands: {}", e.getMessage());
         }
     }
 
     @Override
     public void onUpdateReceived(Update update) {
         if (!update.hasMessage() || !update.getMessage().hasText()) {
-            // TODO: Error handling for empty input.
+            // Skipping empty input.
             return;
         }
 
@@ -61,12 +62,12 @@ public class StudyBot extends TelegramLongPollingBot {
         String[] parts = input.split("\\s+");
 
         String commandName = parts[0];
-        if (commandName.equals("/help") && parts[1] != null) {
-            processHelpCommand(parts[1], update.getMessage());
+        if (commandName.equals("/help")) {
+            processHelpCommand(parts, update.getMessage());
             return;
         }
 
-        ICommand cmd = getCommand(commandName);
+        AbstractBotCommand cmd = getCommand(commandName);
         if (cmd == null) {
             return;
         }
@@ -76,10 +77,11 @@ public class StudyBot extends TelegramLongPollingBot {
         try {
             cmd.processCommand(commandArgs, update.getMessage(), this);
         } catch (TelegramApiException e) {
-            SendMessage message = new SendMessage();
-            message.setChatId(update.getMessage().getChatId().toString());
-            message.setText("К сожалению, не удалось загрузить и обработать запрошенное видео. Пожалуйста, " +
-                            "проверьте правильность ссылки и попробуйте еще раз.");
+            SendMessage message = SendMessage.builder()
+                    .chatId(update.getMessage().getChatId().toString())
+                    .text("К сожалению, не удалось загрузить и обработать запрошенное видео. Пожалуйста, " +
+                          "проверьте правильность ссылки и попробуйте еще раз.")
+                    .build();
             try {
                 execute(message);
             } catch (TelegramApiException ex) {
@@ -88,27 +90,34 @@ public class StudyBot extends TelegramLongPollingBot {
         }
     }
 
-    private void processHelpCommand(String commandToDisplayUsage, Message message) {
-        ICommand command = getCommand(commandToDisplayUsage);
-        if (command == null) {
+    @SneakyThrows
+    private void processHelpCommand(String[] parts, Message message) {
+        if (parts.length < 2) {
+            execute(SendMessage.builder()
+                    .chatId(message.getChatId())
+                    .text(properties.getMessage().get("help"))
+                    .disableWebPagePreview(Boolean.TRUE)
+                    .build());
             return;
         }
 
-        try {
-            execute(SendMessage.builder()
-                    .chatId(message.getChatId())
-                    .text(command.getUsage())
-                    .disableWebPagePreview(Boolean.TRUE)
-                    .build());
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
+        String commandToDisplayUsage = parts[1];
+        AbstractBotCommand commandForUsage = getCommand(commandToDisplayUsage);
+        if (commandForUsage == null || commandForUsage.getUsage() == null) {
+            return;
         }
+
+        execute(SendMessage.builder()
+                .chatId(message.getChatId())
+                .text(commandForUsage.getUsage())
+                .disableWebPagePreview(Boolean.TRUE)
+                .build());
     }
 
-    private ICommand getCommand(String commandName) {
+    private AbstractBotCommand getCommand(String commandName) {
         String commandNameWithoutSlash = commandName.startsWith("/") ? commandName.substring(1) : commandName;
 
-        for (ICommand cmd : commands) {
+        for (AbstractBotCommand cmd : commands) {
             if (cmd.getCommandName().equals(commandNameWithoutSlash)) {
                 return cmd;
             }

@@ -1,13 +1,17 @@
 package com.naevis.bot.service;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class YoutubeClipperService {
     public String clipVideo(String link, String start, String end, Boolean withSubs, Boolean isGif) throws IOException, InterruptedException {
         String workbenchDir = System.getProperty("user.home") + "/.workbench";
@@ -32,13 +36,25 @@ public class YoutubeClipperService {
 
         Process process = new ProcessBuilder()
                 .command("/bin/bash", "-c", cmdBuilder.toString())
-                // .redirectErrorStream(true)
                 .start();
 
         int exitCode = process.waitFor();
         if (exitCode != 0) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                log.info(line);
+            }
+
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            String errorLine;
+            while ((errorLine = errorReader.readLine()) != null) {
+                log.error(errorLine);
+            }
+
             throw new RuntimeException("Failed to clip video");
         }
+
         return workbenchDir + "/" + resultFileName;
     }
 

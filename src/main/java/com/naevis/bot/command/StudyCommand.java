@@ -4,22 +4,19 @@ import java.util.Optional;
 
 import com.naevis.bot.model.AppUser;
 import com.naevis.bot.model.Session;
+import com.naevis.bot.properties.TelegramProperties;
 import com.naevis.bot.repository.AppUserRepository;
 import com.naevis.bot.service.SessionService;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Component
 @Slf4j
-public class StudyCommand extends BotCommand implements ICommand {
-    public static final String COMMAND_NAME = "study";
-    public static final String DESCRIPTION = "Начать учебную сессию";
+public class StudyCommand extends AbstractBotCommand {
     public static final String USAGE = "`!study <min>`, где `min` необязательный параметр кол-ва минут. Например, " +
                                        "`!study 60` для 60-минутной учебной сессии. По умолчанию время сессии 90 " +
                                        "минут.";
@@ -27,19 +24,14 @@ public class StudyCommand extends BotCommand implements ICommand {
     private final SessionService sessionService;
     private final AppUserRepository appUserRepository;
 
-    public StudyCommand(AppUserRepository appUserRepository, SessionService sessionService) {
-        super(COMMAND_NAME, DESCRIPTION);
+    public StudyCommand(AppUserRepository appUserRepository, SessionService sessionService, TelegramProperties properties) {
+        super("study", properties.getCommand().get("study"), USAGE, 1);
         this.appUserRepository = appUserRepository;
         this.sessionService = sessionService;
     }
 
     @Override
-    public void processCommand(String[] args, Message message, AbsSender bot) throws TelegramApiException {
-        if (args.length == 0) {
-            bot.execute(this.buildMessage(message, "Название сессии должно идти первым аргументом"));
-            return;
-        }
-
+    public void processCommandImpl(String[] args, Message message, AbsSender bot) throws TelegramApiException {
         Long telegramUserId = message.getFrom().getId();
         Optional<AppUser> appUserOptional = appUserRepository.findByTelegramId(telegramUserId);
 
@@ -62,17 +54,5 @@ public class StudyCommand extends BotCommand implements ICommand {
                 .chatId(message.getChatId().toString())
                 .text(text)
                 .build();
-    }
-
-    public String getCommandName() {
-        return COMMAND_NAME;
-    }
-
-    public @NonNull String getDescription() {
-        return DESCRIPTION;
-    }
-
-    public String getUsage() {
-        return USAGE;
     }
 }

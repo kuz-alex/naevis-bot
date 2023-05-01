@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/naevis
+    username: naevis_bot
+    password: naevis_bot
+
+  liquibase:
+    change-log: classpath:liquibase/changelog-main.xml
+
+  profiles:
+    include:
+      - telegram
+
+logging:
+  config: classpath:logback-spring.xml

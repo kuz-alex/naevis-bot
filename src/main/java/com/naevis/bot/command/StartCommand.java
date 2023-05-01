@@ -1,32 +1,27 @@
 package com.naevis.bot.command;
 
 import com.naevis.bot.model.AppUser;
+import com.naevis.bot.properties.TelegramProperties;
 import com.naevis.bot.repository.AppUserRepository;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Component
 @Slf4j
-public class StartCommand extends BotCommand implements ICommand {
-    public static final String COMMAND_NAME = "start";
-    public static final String DESCRIPTION = "Bot initialization";
-    public static final String USAGE = "";
-
+public class StartCommand extends AbstractBotCommand {
     private final AppUserRepository appUserRepository;
 
-    public StartCommand(AppUserRepository appUserRepository) {
-        super(COMMAND_NAME, DESCRIPTION);
+    public StartCommand(AppUserRepository appUserRepository, TelegramProperties properties) {
+        super("start", properties.getCommand().get("start"));
         this.appUserRepository = appUserRepository;
     }
 
     @Override
-    public void processCommand(String[] args, Message message, AbsSender bot) throws TelegramApiException {
+    public void processCommandImpl(String[] args, Message message, AbsSender bot) throws TelegramApiException {
         Long telegramUserId = message.getFrom().getId();
         String userName = message.getFrom().getUserName();
 
@@ -47,17 +42,5 @@ public class StartCommand extends BotCommand implements ICommand {
                 .text("Вы можете использовать все возможности бота.")
                 .build();
         bot.execute(result);
-    }
-
-    public String getCommandName() {
-        return COMMAND_NAME;
-    }
-
-    public @NonNull String getDescription() {
-        return DESCRIPTION;
-    }
-
-    public String getUsage() {
-        return USAGE;
     }
 }
