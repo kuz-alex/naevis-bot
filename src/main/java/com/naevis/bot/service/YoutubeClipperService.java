@@ -41,17 +41,20 @@ public class YoutubeClipperService {
         int exitCode = process.waitFor();
         if (exitCode != 0) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder output = new StringBuilder();
+
             String line;
             while ((line = reader.readLine()) != null) {
-                log.info(line);
+                output.append(line).append("\n");
             }
 
             BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
             String errorLine;
             while ((errorLine = errorReader.readLine()) != null) {
-                log.error(errorLine);
+                output.append(errorLine).append("\n");
             }
 
+            log.info(output.toString());
             throw new RuntimeException("Failed to clip video");
         }
 

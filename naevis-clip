@@ -55,7 +55,7 @@ if [[ $with_subs -eq 1 ]]; then
   download_video_clip $link $start $end $result_file_path
 
   # Download subs
-  yt-dlp --write-sub --sub-lang en --sub-format vtt --skip-download -o "${result_file_name}" "$link"
+  yt-dlp --write-sub --write-auto-sub --sub-lang "en" --sub-format vtt --skip-download -o "${result_file_name}" "$link"
 
   # Cut a clip from the subtitles file
   ffmpeg -i "${result_file_name}.en.vtt" -ss ${start} -to ${end} -c copy "cut_subs_${result_file_name}.en.vtt"
