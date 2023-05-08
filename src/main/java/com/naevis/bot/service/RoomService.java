@@ -4,8 +4,8 @@ import java.util.Collections;
 
 import com.naevis.bot.model.Room;
 import com.naevis.bot.model.AppUser;
-import com.naevis.bot.repository.AppUserRepository;
 import com.naevis.bot.repository.RoomRepository;
+import com.naevis.bot.util.RandomUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,8 +17,11 @@ public class RoomService {
     }
 
     public Room createRoom(AppUser user, String name) {
+        String roomCode = RandomUtils.generateRoomCode(5);
+
         Room room = Room.builder()
                 .name(name)
+                .code(roomCode)
                 .owner(user)
                 .joinedUsers(Collections.singletonList(user))
                 .build();

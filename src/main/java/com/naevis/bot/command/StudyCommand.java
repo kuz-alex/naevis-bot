@@ -17,8 +17,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Component
 @Slf4j
 public class StudyCommand extends AbstractBotCommand {
-    public static final String USAGE = "`!study <min>`, где `min` необязательный параметр кол-ва минут. Например, " +
-                                       "`!study 60` для 60-минутной учебной сессии. По умолчанию время сессии 90 " +
+    public static final String USAGE = "`!study <name> [min]`, где `min` необязательный параметр кол-ва минут. Например, " +
+                                       "`!study math 60` для 60-минутной учебной сессии. По умолчанию время сессии 90 " +
                                        "минут.";
 
     private final SessionService sessionService;
@@ -40,7 +40,7 @@ public class StudyCommand extends AbstractBotCommand {
             return;
         }
 
-        Integer duration = args.length > 1 ? Integer.valueOf(args[1]) : null;
+        Integer duration = args.length > 1 ? Integer.parseInt(args[1]) : 90;
 
         AppUser user = appUserOptional.get();
         Session session = sessionService.createSession(user, args[0], duration);

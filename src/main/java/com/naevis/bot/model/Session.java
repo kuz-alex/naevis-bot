@@ -30,6 +30,9 @@ public class Session {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private AppUser user;
 
+    @Column(name = "startedAt", nullable = false, insertable = false, updatable = false)
+    private Timestamp startedAt;
+
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private Timestamp createdAt;
 }

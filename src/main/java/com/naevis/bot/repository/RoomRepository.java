@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Long> {
-    @Query("SELECT r FROM Room r JOIN FETCH r.joinedUsers WHERE r.id = :roomId")
-    Optional<Room> findByIdWithJoinedUsers(@Param("roomId") Long roomId);
+    @Query("SELECT r FROM Room r JOIN FETCH r.joinedUsers WHERE r.code = :code")
+    Optional<Room> findByCodeWithUsers(@Param("code") String code);
 }

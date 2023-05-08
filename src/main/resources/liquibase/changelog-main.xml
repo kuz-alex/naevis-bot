@@ -79,5 +79,24 @@
         />
     </changeSet>
 
+    <changeSet id="add-created-at-column" author="kuz-alex">
+        <addColumn tableName="sessions">
+            <column name="created_at" type="timestamp" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add-room-code-column" author="kuz-alex">
+        <addColumn tableName="rooms">
+            <column name="code" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="app_users">
+            <column name="full_name" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>

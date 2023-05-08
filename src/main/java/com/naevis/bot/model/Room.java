@@ -24,6 +24,9 @@ public class Room {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "code")
+    private String code;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", referencedColumnName = "id")
     private AppUser owner;

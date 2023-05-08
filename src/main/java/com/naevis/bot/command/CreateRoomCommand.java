@@ -45,7 +45,7 @@ public class CreateRoomCommand extends AbstractBotCommand {
         AppUser user = appUserOptional.get();
         Room createdRoom = roomService.createRoom(user, roomName);
 
-        bot.execute(this.buildMessage(message, String.format("Ваш код комнаты: %s", createdRoom.getId())));
+        bot.execute(this.buildMessage(message, String.format("Ваш код комнаты: %s", createdRoom.getCode())));
     }
 
     private SendMessage buildMessage(Message message, String text) {

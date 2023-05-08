@@ -1,10 +1,7 @@
 package com.naevis.bot.service;
 
-import java.util.Optional;
-
 import com.naevis.bot.model.AppUser;
 import com.naevis.bot.model.Session;
-import com.naevis.bot.repository.AppUserRepository;
 import com.naevis.bot.repository.SessionRepository;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +17,7 @@ public class SessionService {
         return sessionRepository.save(Session.builder()
                 .name(name)
                 .user(user)
-                .durationMin(duration != null ? duration : 90)
+                .durationMin(duration)
                 .build()
         );
     }

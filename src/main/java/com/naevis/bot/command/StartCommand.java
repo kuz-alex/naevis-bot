@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -22,15 +23,18 @@ public class StartCommand extends AbstractBotCommand {
 
     @Override
     public void processCommandImpl(String[] args, Message message, AbsSender bot) throws TelegramApiException {
-        Long telegramUserId = message.getFrom().getId();
-        String userName = message.getFrom().getUserName();
+        User telegramUser = message.getFrom();
+        Long id = telegramUser.getId();
+        String userName = telegramUser.getUserName();
+        String fullName = telegramUser.getFirstName() + " " + telegramUser.getLastName();
 
-        appUserRepository.findByTelegramId(telegramUserId).ifPresentOrElse(
+        appUserRepository.findByTelegramId(id).ifPresentOrElse(
         user -> log.info("User already exist: {}", user),
         () -> {
             AppUser user = AppUser.builder()
-                    .telegramId(telegramUserId)
+                    .telegramId(id)
                     .userName(userName)
+                    .fullName(fullName)
                     .build();
             log.info("Creating the user: {}", user);
 

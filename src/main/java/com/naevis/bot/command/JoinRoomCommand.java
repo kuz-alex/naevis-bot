@@ -36,7 +36,7 @@ public class JoinRoomCommand extends AbstractBotCommand {
     @Override
     public void processCommandImpl(String[] args, Message message, AbsSender bot) throws TelegramApiException {
         String roomId = args[0];
-        Optional<Room> roomOptional = roomRepository.findByIdWithJoinedUsers(Long.valueOf(roomId));
+        Optional<Room> roomOptional = roomRepository.findByCodeWithUsers(roomId);
 
         if (roomOptional.isEmpty()) {
             bot.execute(this.buildMessage(message, String.format(
@@ -48,7 +48,7 @@ public class JoinRoomCommand extends AbstractBotCommand {
         Optional<AppUser> appUserOptional = appUserRepository.findByTelegramId(telegramUserId);
 
         if (appUserOptional.isEmpty()) {
-            bot.execute(this.buildMessage(message, "Для доступа к этому функционалу выполните команду `join_room`"));
+            bot.execute(this.buildMessage(message, "Для доступа к этому функционалу выполните команду `/start`"));
             return;
         }
 
