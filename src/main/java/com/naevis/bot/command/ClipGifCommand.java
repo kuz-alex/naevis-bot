@@ -33,21 +33,23 @@ public class ClipGifCommand extends AbstractBotCommand {
     }
 
     @Override
-    public void processCommandImpl(String[] args, Message message, AbsSender bot) throws TelegramApiException {
+    public void processCommandImpl(String[] args, Message message, AbsSender bot) {
         String link = args[0];
         String start = args[1];
         String end = args[2];
         String[] rest = Arrays.copyOfRange(args, 3, args.length); // tags
 
         try {
-            String fullPath = new YoutubeClipperService().clipVideo(link, start, end, false, true);
+            YoutubeClipperService.VideoInfo video = YoutubeClipperService.clipVideo(link, start, end, false, true);
 
             bot.execute(SendAnimation.builder()
                     .chatId(message.getChatId().toString())
-                    .animation(new InputFile(new File(fullPath)))
+                    .animation(new InputFile(new File(video.getPath())))
+                    .height(video.getHeight())
+                    .width(video.getWidth())
                     .caption(formatTags(rest))
                     .build());
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | TelegramApiException e) {
             log.error("Error processing a video: {}", e.toString());
         }
     }

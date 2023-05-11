@@ -1,15 +1,14 @@
 package com.naevis.bot.service;
 
+import com.naevis.bot.util.ShellUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.UUID;
 
 @Service
@@ -36,28 +35,13 @@ public class YoutubeClipperService {
             cmdBuilder.append(" --gif");
         }
 
-        Process process = new ProcessBuilder()
-                .command("/bin/bash", "-c", cmdBuilder.toString())
-                .start();
+        ShellUtils.CommandResult result = ShellUtils.runCommand(cmdBuilder.toString());
 
-        int exitCode = process.waitFor();
-        if (exitCode != 0) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            StringBuilder output = new StringBuilder();
+        log.info(String.format("Stdout for video %s: %s", link, result.getStdout()));
+        log.info(String.format("Stderr for video %s: %s", link, result.getStderr()));
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line).append("\n");
-            }
-
-            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            String errorLine;
-            while ((errorLine = errorReader.readLine()) != null) {
-                output.append(errorLine).append("\n");
-            }
-
-            log.info(output.toString());
-            throw new RuntimeException("Failed to clip video");
+        if (result.getExitCode() != 0) {
+            throw new RuntimeException("Error clipping video: " + link);
         }
 
         String path = workbenchDir + "/" + resultFileName;
@@ -65,26 +49,11 @@ public class YoutubeClipperService {
         return new VideoInfo(path, dimensions[0], dimensions[1]);
     }
 
-    static public int[] getVideoDimensions(String fullPath) throws IOException, InterruptedException {
-        Process process = new ProcessBuilder()
-                .command("/bin/bash", "-c", "ffprobe -v error -select_streams v -show_entries stream=width,height -of csv=p=0:s=x " + fullPath)
-                .start();
+    static public int[] getVideoDimensions(String fullPath) {
+        String command = "ffprobe -v error -select_streams v -show_entries stream=width,height -of csv=p=0:s=x " + fullPath;
+        ShellUtils.CommandResult result = ShellUtils.runCommand(command);
 
-        int exitCode = process.waitFor();
-
-        if (exitCode != 0) {
-            // TODO: Read the error stream and throw an exception.
-            // throw new RuntimeException("Failed to get video dimensions");
-        }
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        StringBuilder output = new StringBuilder();
-
-        String line;
-        while ((line = reader.readLine()) != null) {
-            output.append(line);
-        }
-
-        String[] dimensions = output.toString().split("x");
+        String[] dimensions = result.getStdout().replace("\n", "").split("x");
         int width = Integer.parseInt(dimensions[0]);
         int height = Integer.parseInt(dimensions[1]);
 
@@ -101,10 +70,10 @@ public class YoutubeClipperService {
 
     @SneakyThrows
     public static void main(String[] args) {
-        // String link = "https://youtube.com/watch?v=QZHbypZSTGg";
+        String link = "https://youtube.com/watch?v=QZHbypZSTGg";
         // QZHbypZSTGg 2:39.89 3:29.00
-        // YoutubeClipperService.getVideoDimensions("/Users/kuz-alex/.workbench/source_some1a.mp4");
-        // VideoInfo test = YoutubeClipperService.clipVideo(link, "2:39.89", "3:29.00", false, false);
-        // System.out.println("testeroni333: " + test);
+         YoutubeClipperService.getVideoDimensions("/Users/kuz-alex/.workbench/source_some1a.mp4");
+         // VideoInfo test = YoutubeClipperService.clipVideo(link, "2:39.89", "3:29.00", false, false);
+         // System.out.println("testeroni333: " + test);
     }
 }
