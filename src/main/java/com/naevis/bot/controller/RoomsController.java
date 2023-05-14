@@ -2,11 +2,15 @@ package com.naevis.bot.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.naevis.bot.dto.RoomDto;
 import com.naevis.bot.model.AppUser;
+import com.naevis.bot.model.Room;
 import com.naevis.bot.model.Session;
 import com.naevis.bot.dto.SessionDto;
 import com.naevis.bot.repository.AppUserRepository;
+import com.naevis.bot.repository.RoomRepository;
 import com.naevis.bot.repository.SessionRepository;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,10 +22,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class RoomsController {
     private final SessionRepository sessionRepository;
     private final AppUserRepository appUserRepository;
+    private final RoomRepository roomRepository;
 
-    public RoomsController(SessionRepository sessionRepository, AppUserRepository appUserRepository) {
+    public RoomsController(SessionRepository sessionRepository, AppUserRepository appUserRepository,
+                           RoomRepository roomRepository) {
         this.sessionRepository = sessionRepository;
         this.appUserRepository = appUserRepository;
+        this.roomRepository = roomRepository;
     }
 
     @GetMapping("/{roomCode}/sessions")
@@ -34,15 +41,32 @@ public class RoomsController {
 
             for (Session session : sessions) {
                 result.add(SessionDto.builder()
-                    .id(session.getId())
-                    .name(session.getName())
-                    .durationMin(session.getDurationMin())
-                    .telegramUser(user.getFullName() + " @" + user.getUserName())
-                    .startedAt(session.getStartedAt().toInstant())
-                    .build()
+                        .id(session.getId())
+                        .name(session.getName())
+                        .durationMin(session.getDurationMin())
+                        .telegramUser(user.getFullName() + " @" + user.getUserName())
+                        .startedAt(session.getStartedAt().toInstant())
+                        .build()
                 );
             }
         }
         return result;
+    }
+
+    @GetMapping("/{userId}")
+    public List<RoomDto> getRoomsByUserId(@PathVariable String userId) {
+        List<Room> rooms = roomRepository.findRoomsByUserId(Long.valueOf(userId));
+        List<RoomDto> roomDtos = rooms.stream()
+                .map((room) -> {
+                    return RoomDto.builder()
+                            .id(room.getId())
+                            .name(room.getName())
+                            .code(room.getCode())
+                            .createdAt(room.getCreatedAt().toInstant())
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        return roomDtos;
     }
 }
