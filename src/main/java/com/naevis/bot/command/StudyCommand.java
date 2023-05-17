@@ -31,12 +31,12 @@ public class StudyCommand extends AbstractBotCommand {
     }
 
     @Override
-    public void processCommandImpl(String[] args, Message message, AbsSender bot) throws TelegramApiException {
+    public void processCommandImpl(String[] args, Message message, AbsSender sender) throws TelegramApiException {
         Long telegramUserId = message.getFrom().getId();
         Optional<AppUser> appUserOptional = appUserRepository.findByTelegramId(telegramUserId);
 
         if (appUserOptional.isEmpty()) {
-            bot.execute(this.buildMessage(message, "Для доступа к этому функционалу выполните команду `start`"));
+            sender.execute(this.buildMessage(message, "Для доступа к этому функционалу выполните команду `start`"));
             return;
         }
 
@@ -44,7 +44,7 @@ public class StudyCommand extends AbstractBotCommand {
 
         AppUser user = appUserOptional.get();
         Session session = sessionService.createSession(user, args[0], duration);
-        bot.execute(this.buildMessage(message, String.format(
+        sender.execute(this.buildMessage(message, String.format(
                 "Сессия \"%s\" запущена на %s минут. Фокус!", session.getName(), session.getDurationMin())));
 
     }

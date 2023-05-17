@@ -22,7 +22,7 @@ public class StartCommand extends AbstractBotCommand {
     }
 
     @Override
-    public void processCommandImpl(String[] args, Message message, AbsSender bot) throws TelegramApiException {
+    public void processCommandImpl(String[] args, Message message, AbsSender sender) throws TelegramApiException {
         User telegramUser = message.getFrom();
         Long id = telegramUser.getId();
         String userName = telegramUser.getUserName();
@@ -45,6 +45,6 @@ public class StartCommand extends AbstractBotCommand {
                 .chatId(message.getChatId().toString())
                 .text("Вы можете использовать все возможности бота.")
                 .build();
-        bot.execute(result);
+        sender.execute(result);
     }
 }

@@ -2,6 +2,6 @@
 
 rsync -avzh \
   --exclude='.git' --exclude='.idea' --exclude='target' \
-  ~/Projects/naevis-bot/* main@84.201.184.213:/home/main/projects/naevis-bot
+  ~/Projects/naevis-bot/* main@51.250.51.168:/home/main/projects/naevis-bot
 
 

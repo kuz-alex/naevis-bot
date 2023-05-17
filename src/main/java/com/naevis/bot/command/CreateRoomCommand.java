@@ -30,7 +30,7 @@ public class CreateRoomCommand extends AbstractBotCommand {
     }
 
     @Override
-    public void processCommandImpl(String[] args, Message message, AbsSender bot) throws TelegramApiException {
+    public void processCommandImpl(String[] args, Message message, AbsSender sender) throws TelegramApiException {
         String roomName = args[0];
 
         Long telegramUserId = message.getFrom().getId();
@@ -38,14 +38,14 @@ public class CreateRoomCommand extends AbstractBotCommand {
 
         if (appUserOptional.isEmpty()) {
             // TODO: Create user here.
-            bot.execute(this.buildMessage(message,"Для доступа к этому функционалу выполните команду `start`"));
+            sender.execute(this.buildMessage(message,"Для доступа к этому функционалу выполните команду `start`"));
             return;
         }
 
         AppUser user = appUserOptional.get();
         Room createdRoom = roomService.createRoom(user, roomName);
 
-        bot.execute(this.buildMessage(message, String.format("Ваш код комнаты: %s", createdRoom.getCode())));
+        sender.execute(this.buildMessage(message, String.format("Ваш код комнаты: %s", createdRoom.getCode())));
     }
 
     private SendMessage buildMessage(Message message, String text) {

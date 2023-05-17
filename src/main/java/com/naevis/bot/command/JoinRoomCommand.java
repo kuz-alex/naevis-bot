@@ -34,12 +34,12 @@ public class JoinRoomCommand extends AbstractBotCommand {
     }
 
     @Override
-    public void processCommandImpl(String[] args, Message message, AbsSender bot) throws TelegramApiException {
+    public void processCommandImpl(String[] args, Message message, AbsSender sender) throws TelegramApiException {
         String roomId = args[0];
         Optional<Room> roomOptional = roomRepository.findByCodeWithUsers(roomId);
 
         if (roomOptional.isEmpty()) {
-            bot.execute(this.buildMessage(message, String.format(
+            sender.execute(this.buildMessage(message, String.format(
                     "Не удалось найти комнату по коду %s", roomId)));
             return;
         }
@@ -48,7 +48,7 @@ public class JoinRoomCommand extends AbstractBotCommand {
         Optional<AppUser> appUserOptional = appUserRepository.findByTelegramId(telegramUserId);
 
         if (appUserOptional.isEmpty()) {
-            bot.execute(this.buildMessage(message, "Для доступа к этому функционалу выполните команду `/start`"));
+            sender.execute(this.buildMessage(message, "Для доступа к этому функционалу выполните команду `/start`"));
             return;
         }
 

@@ -33,7 +33,7 @@ public class ClipGifCommand extends AbstractBotCommand {
     }
 
     @Override
-    public void processCommandImpl(String[] args, Message message, AbsSender bot) {
+    public void processCommandImpl(String[] args, Message message, AbsSender sender) {
         String link = args[0];
         String start = args[1];
         String end = args[2];
@@ -42,7 +42,7 @@ public class ClipGifCommand extends AbstractBotCommand {
         try {
             YoutubeClipperService.VideoInfo video = YoutubeClipperService.clipVideo(link, start, end, false, true);
 
-            bot.execute(SendAnimation.builder()
+            sender.execute(SendAnimation.builder()
                     .chatId(message.getChatId().toString())
                     .animation(new InputFile(new File(video.getPath())))
                     .height(video.getHeight())

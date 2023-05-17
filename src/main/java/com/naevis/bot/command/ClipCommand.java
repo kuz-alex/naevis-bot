@@ -34,7 +34,7 @@ public class ClipCommand extends AbstractBotCommand {
     }
 
     @Override
-    public void processCommandImpl(String[] args, Message message, AbsSender bot) {
+    public void processCommandImpl(String[] args, Message message, AbsSender sender) {
         String link = args[0];
         String start = args[1];
         String end = args[2];
@@ -43,7 +43,7 @@ public class ClipCommand extends AbstractBotCommand {
         try {
             YoutubeClipperService.VideoInfo video = YoutubeClipperService.clipVideo(link, start, end, false, false);
 
-            bot.execute(SendVideo.builder()
+            sender.execute(SendVideo.builder()
                     .chatId(message.getChatId().toString())
                     .supportsStreaming(Boolean.TRUE)
                     .height(video.getHeight())

@@ -2,60 +2,37 @@ package com.naevis.bot.telegram;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.naevis.bot.command.AbstractBotCommand;
 import com.naevis.bot.properties.TelegramProperties;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
+import org.telegram.telegrambots.bots.TelegramWebhookBot;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
-import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Component
 @Slf4j
-public class StudyBot extends TelegramLongPollingBot {
+public class StudyWebhookBot extends TelegramWebhookBot {
     private final List<AbstractBotCommand> commands;
-    private final String botName;
     private final TelegramProperties properties;
 
-    @Override
-    public String getBotUsername() {
-        return botName;
-    }
-
-    public StudyBot(TelegramProperties properties, List<AbstractBotCommand> commands) {
+    public StudyWebhookBot(TelegramProperties properties, List<AbstractBotCommand> commands) {
         super(properties.getToken());
         this.properties = properties;
-        this.botName = properties.getName();
         this.commands = commands;
-
-        try {
-            List<BotCommand> botCommands = commands.stream()
-                    .map(cmd -> new BotCommand("/" + cmd.getCommandName(), cmd.getDescription()))
-                    .collect(Collectors.toList());
-
-            botCommands.add(new BotCommand("/help", "Команда \"help\" выводит информацию об использовании других " +
-                                                    "команд. Например, для получения помощи по команде \"clip\" " +
-                                                    "нужно написать \"/help clip\"."));
-
-            execute(new SetMyCommands(botCommands, new BotCommandScopeDefault(), null));
-        } catch (TelegramApiException e) {
-            log.error("Couldn't update bot commands through SetMyCommands: {}", e.getMessage());
-        }
     }
 
     @Override
-    public void onUpdateReceived(Update update) {
+    public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
+        log.info("getting webhook update: {}", update);
         if (!update.hasMessage() || !update.getMessage().hasText()) {
             // Skipping empty input.
-            return;
+            return null;
         }
 
         String input = update.getMessage().getText().trim();
@@ -64,12 +41,12 @@ public class StudyBot extends TelegramLongPollingBot {
         String commandName = parts[0];
         if (commandName.equals("/help")) {
             processHelpCommand(parts, update.getMessage());
-            return;
+            return null;
         }
 
         AbstractBotCommand cmd = getCommand(commandName);
         if (cmd == null) {
-            return;
+            return null;
         }
 
         String[] commandArgs = Arrays.copyOfRange(parts, 1, parts.length);
@@ -88,6 +65,7 @@ public class StudyBot extends TelegramLongPollingBot {
                 ex.printStackTrace();
             }
         }
+        return null;
     }
 
     @SneakyThrows
@@ -123,5 +101,15 @@ public class StudyBot extends TelegramLongPollingBot {
             }
         }
         return null;
+    }
+
+    @Override
+    public String getBotPath() {
+        return properties.getWebhookPath();
+    }
+
+    @Override
+    public String getBotUsername() {
+        return properties.getName();
     }
 }

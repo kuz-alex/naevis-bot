@@ -33,7 +33,7 @@ public class ClipSubsCommand extends AbstractBotCommand {
     }
 
     @Override
-    public void processCommandImpl(String[] args, Message message, AbsSender bot) {
+    public void processCommandImpl(String[] args, Message message, AbsSender sender) {
         String link = args[0];
         String start = args[1];
         String end = args[2];
@@ -50,7 +50,7 @@ public class ClipSubsCommand extends AbstractBotCommand {
                     .caption(formatTags(rest))
                     .video(new InputFile(new File(video.getPath())))
                     .build();
-            bot.execute(answer);
+            sender.execute(answer);
         } catch (IOException | InterruptedException | TelegramApiException e) {
             log.error("Error processing a video: {}", e.toString());
         }

@@ -41,19 +41,19 @@ public abstract class AbstractBotCommand extends BotCommand {
         return usage;
     }
 
-    public void processCommand(String[] args, Message message, AbsSender bot) throws TelegramApiException {
+    public void processCommand(String[] args, Message message, AbsSender sender) throws TelegramApiException {
         log.info("Processing: {} with {}", getCommandName(), Arrays.toString(args));
 
         if (paramLength != -1 && args.length < paramLength) {
-            bot.execute(SendMessage.builder()
+            sender.execute(SendMessage.builder()
                     .chatId(message.getChatId().toString())
                     .text(String.format("Не переданы обязательные аргументы (смотри /help %s)", getCommandName()))
                     .build());
             return;
         }
 
-        processCommandImpl(args, message, bot);
+        processCommandImpl(args, message, sender);
     };
 
-    protected abstract void processCommandImpl(String[] args, Message message, AbsSender bot) throws TelegramApiException;
+    protected abstract void processCommandImpl(String[] args, Message message, AbsSender sender) throws TelegramApiException;
 }
