@@ -8,6 +8,7 @@ import com.naevis.bot.command.AbstractBotCommand;
 import com.naevis.bot.properties.TelegramProperties;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
@@ -19,6 +20,7 @@ import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScope
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Component
+@ConditionalOnProperty(prefix = "telegram", name = "useWebhook", havingValue = "false")
 @Slf4j
 public class StudyLongPollingBot extends TelegramLongPollingBot {
     private final List<AbstractBotCommand> commands;

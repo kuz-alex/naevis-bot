@@ -1,10 +1,9 @@
 telegram:
   name: ${STUDY_BOT_NAME}
   token: ${STUDY_BOT_TOKEN}
-  useWebhook: true
-  webhookUrl: https://studycloud.live:443/webhook/naevis
-  webhookPath: /webhook/naevis
-  sslCertPath: /etc/letsencrypt/live/studycloud.live/fullchain.pem
+  useWebhook: false
+  webhookUrl: https://studycloud.live:443
+  webhookPath: /naevis
 
   command:
     start: Начало работы с ботом

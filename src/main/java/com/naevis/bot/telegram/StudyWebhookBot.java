@@ -7,22 +7,30 @@ import com.naevis.bot.command.AbstractBotCommand;
 import com.naevis.bot.properties.TelegramProperties;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.starter.SpringWebhookBot;
 
 @Component
+@ConditionalOnProperty(prefix = "telegram", name = "useWebhook", havingValue = "true")
 @Slf4j
-public class StudyWebhookBot extends TelegramWebhookBot {
+public class StudyWebhookBot extends SpringWebhookBot {
     private final List<AbstractBotCommand> commands;
     private final TelegramProperties properties;
 
     public StudyWebhookBot(TelegramProperties properties, List<AbstractBotCommand> commands) {
-        super(properties.getToken());
+        super(
+                SetWebhook.builder()
+                        .url(properties.getWebhookUrl())
+                        .build(),
+                properties.getToken()
+        );
         this.properties = properties;
         this.commands = commands;
     }
