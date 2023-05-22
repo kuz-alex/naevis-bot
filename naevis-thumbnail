@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Check if the correct number of arguments is provided
+if [ $# -ne 3 ]; then
+  echo "Usage: $0 video_file image_file output_image_file"
+  exit 1
+fi
+
+# Input files
+video_file=$1
+image_file=$2
+output_file=$3
+
+echo $video_file
+echo $image_file
+
+# Get the video dimensions
+videoInfo=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 $video_file)
+videoWidth=$(echo $videoInfo | cut -d 'x' -f 1)
+videoHeight=$(echo $videoInfo | cut -d 'x' -f 2)
+
+# Get the image dimensions
+imageInfo=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 $image_file)
+imageWidth=$(echo $imageInfo | cut -d 'x' -f 1)
+imageHeight=$(echo $imageInfo | cut -d 'x' -f 2)
+
+# Calculate the aspect ratio of the video and image
+VIDEO_ASPECT=$(echo "scale=10; $videoWidth/$videoHeight" | bc)
+IMAGE_ASPECT=$(echo "scale=10; $imageWidth/$imageHeight" | bc)
+
+echo $VIDEO_ASPECT
+echo $IMAGE_ASPECT
+
+# If the image aspect ratio is wider than the video's, crop the sides
+if (( $(echo "$IMAGE_ASPECT > $VIDEO_ASPECT" | bc -l) )); then
+    newImageWidth=$(echo "scale=0; $imageHeight*$videoWidth/$videoHeight" | bc)
+    echo $newImageWidth
+    convert $image_file -resize ${newImageWidth}x${imageHeight}^ -gravity center -extent ${newImageWidth}x${imageHeight} ${output_file}
+# If the image aspect ratio is taller than the video's, crop the top and bottom
+else
+    newImageHeight=$(echo "scale=0; $imageWidth*$videoHeight/$videoWidth" | bc)
+    convert $image_file -resize ${imageWidth}x${newImageHeight}^ -gravity center -extent ${imageWidth}x${newImageHeight} ${output_file}
+fi

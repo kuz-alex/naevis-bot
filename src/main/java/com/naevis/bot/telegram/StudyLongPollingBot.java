@@ -53,6 +53,7 @@ public class StudyLongPollingBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        log.info("processing longpolling update: {}", update);
         if (!update.hasMessage() || !update.getMessage().hasText()) {
             // Skipping empty input.
             return;

@@ -49,6 +49,7 @@ public class ClipCommand extends AbstractBotCommand {
                     .height(video.getHeight())
                     .width(video.getWidth())
                     .caption(formatTags(rest))
+                    .thumb(new InputFile(new File(video.getThumbnailPath())))
                     .video(new InputFile(new File(video.getPath())))
                     .build());
         } catch (IOException | InterruptedException | TelegramApiException e) {

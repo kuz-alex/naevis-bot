@@ -20,7 +20,9 @@ public class YoutubeClipperService {
         if (!workbench.exists()) {
             workbench.mkdir();
         }
-        String resultFileName = UUID.randomUUID() + ".mp4";
+
+        UUID videoUid = UUID.randomUUID();
+        String resultFileName = videoUid + ".mp4";
 
         StringBuilder cmdBuilder = new StringBuilder();
         cmdBuilder.append("yes N | ~/.bin/naevis-clip ")
@@ -45,12 +47,20 @@ public class YoutubeClipperService {
         }
 
         String path = workbenchDir + "/" + resultFileName;
+        String thumbnailPath = workbenchDir + "/source_" + videoUid + ".jpg";
+        String outputThumbnailPath = workbenchDir + "/source_" + videoUid + "_out.jpg";
+
         int[] dimensions = getVideoDimensions(path);
-        return new VideoInfo(path, dimensions[0], dimensions[1]);
+        String videoThumbnailPath = generateVideoThumbnail(path, thumbnailPath,outputThumbnailPath) == 0
+                ? outputThumbnailPath
+                : null;
+
+        return new VideoInfo(path, dimensions[0], dimensions[1], videoThumbnailPath);
     }
 
     static public int[] getVideoDimensions(String fullPath) {
-        String command = "ffprobe -v error -select_streams v -show_entries stream=width,height -of csv=p=0:s=x " + fullPath;
+        String command =
+                "ffprobe -v error -select_streams v -show_entries stream=width,height -of csv=p=0:s=x " + fullPath;
         ShellUtils.CommandResult result = ShellUtils.runCommand(command);
 
         String[] dimensions = result.getStdout().replace("\n", "").split("x");
@@ -60,20 +70,27 @@ public class YoutubeClipperService {
         return new int[]{width, height};
     }
 
+    static public Integer generateVideoThumbnail(String videoPath, String thumbnailPath, String outputPath) {
+        String command = "naevis-thumbnail " + videoPath + " " + thumbnailPath + " " + outputPath;
+        ShellUtils.CommandResult result = ShellUtils.runCommand(command);
+        return result.getExitCode();
+    }
+
     @Data
     @AllArgsConstructor
     static public class VideoInfo {
         private String path;
         private int width;
         private int height;
+        private String thumbnailPath;
     }
 
     @SneakyThrows
     public static void main(String[] args) {
         String link = "https://youtube.com/watch?v=QZHbypZSTGg";
         // QZHbypZSTGg 2:39.89 3:29.00
-         YoutubeClipperService.getVideoDimensions("/Users/kuz-alex/.workbench/source_some1a.mp4");
-         // VideoInfo test = YoutubeClipperService.clipVideo(link, "2:39.89", "3:29.00", false, false);
-         // System.out.println("testeroni333: " + test);
+        YoutubeClipperService.getVideoDimensions("/Users/kuz-alex/.workbench/source_some1a.mp4");
+        // VideoInfo test = YoutubeClipperService.clipVideo(link, "2:39.89", "3:29.00", false, false);
+        // System.out.println("testeroni333: " + test);
     }
 }

@@ -48,6 +48,7 @@ public class ClipSubsCommand extends AbstractBotCommand {
                     .width(video.getWidth())
                     .height(video.getHeight())
                     .caption(formatTags(rest))
+                    .thumb(new InputFile(new File(video.getThumbnailPath())))
                     .video(new InputFile(new File(video.getPath())))
                     .build();
             sender.execute(answer);

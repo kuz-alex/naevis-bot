@@ -24,8 +24,9 @@ download_video_clip() {
   local end="$3"
   local result_file_path="$4"
 
-  yt-dlp -f 'best[height<=1280][ext=mp4]/best[height<=720][ext=mp4]/best[height=480][ext=mp4]' \
+  yt-dlp -f 'best[height<=1280][ext=mp4]/bestvideo[height<=1280]+bestaudio' \
     --downloader ffmpeg --downloader-args "ffmpeg_i:-ss ${start} -to ${end} " \
+    --write-thumbnail --convert-thumbnails jpg \
     --merge-output-format mp4 -o "source_${result_file_path}" "$link"
 }
 
