@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AppUserRepository extends JpaRepository<AppUser, Long> {
+    @Query("SELECT u FROM AppUser u where u.telegramId = :telegramId")
     Optional<AppUser> findByTelegramId(Long telegramId);
     @Query("SELECT u FROM AppUser u JOIN u.rooms r WHERE r.code = :roomCode")
     List<AppUser> findByRoomCode(@Param("roomCode") String roomCode);

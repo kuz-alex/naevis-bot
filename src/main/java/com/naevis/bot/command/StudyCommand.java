@@ -3,10 +3,10 @@ package com.naevis.bot.command;
 import java.util.Optional;
 
 import com.naevis.bot.model.AppUser;
-import com.naevis.bot.model.Session;
+import com.naevis.bot.model.TimeEntry;
 import com.naevis.bot.properties.TelegramProperties;
 import com.naevis.bot.repository.AppUserRepository;
-import com.naevis.bot.service.SessionService;
+import com.naevis.bot.service.TimeEntryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -21,13 +21,13 @@ public class StudyCommand extends AbstractBotCommand {
                                        "`!study math 60` для 60-минутной учебной сессии. По умолчанию время сессии 90 " +
                                        "минут.";
 
-    private final SessionService sessionService;
+    private final TimeEntryService timeEntryService;
     private final AppUserRepository appUserRepository;
 
-    public StudyCommand(AppUserRepository appUserRepository, SessionService sessionService, TelegramProperties properties) {
+    public StudyCommand(AppUserRepository appUserRepository, TimeEntryService timeEntryService, TelegramProperties properties) {
         super("study", properties.getCommand().get("study"), USAGE, 1);
         this.appUserRepository = appUserRepository;
-        this.sessionService = sessionService;
+        this.timeEntryService = timeEntryService;
     }
 
     @Override
@@ -43,7 +43,7 @@ public class StudyCommand extends AbstractBotCommand {
         Integer duration = args.length > 1 ? Integer.parseInt(args[1]) : 90;
 
         AppUser user = appUserOptional.get();
-        Session session = sessionService.createSession(user, args[0], duration);
+        TimeEntry session = timeEntryService.create(user, args[0], duration);
         sender.execute(this.buildMessage(message, String.format(
                 "Сессия \"%s\" запущена на %s минут. Фокус!", session.getName(), session.getDurationMin())));
 

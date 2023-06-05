@@ -40,4 +40,9 @@ public class AppUser {
 
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private Timestamp createdAt;
+
+    @Override
+    public String toString() {
+        return String.format("AppUser[id=%d, telegramId='%d', userName='%s', fullName='%s']", id, telegramId, userName, fullName);
+    }
 }

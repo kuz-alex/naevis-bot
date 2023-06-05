@@ -19,7 +19,7 @@
             </column>
         </createTable>
 
-        <createSequence sequenceName="user_id_seq" startValue="1" incrementBy="1" />
+        <createSequence sequenceName="user_id_seq" startValue="1" incrementBy="1"/>
     </changeSet>
 
     <changeSet id="rooms-table" author="kuz-alex">
@@ -29,14 +29,14 @@
             </column>
             <column name="name" type="varchar(255)"/>
             <column name="owner_id" type="bigint">
-                <constraints nullable="false" foreignKeyName="fk_rooms_owner" references="app_users(id)" />
+                <constraints nullable="false" foreignKeyName="fk_rooms_owner" references="app_users(id)"/>
             </column>
             <column name="created_at" type="timestamp" defaultValue="now()">
                 <constraints nullable="false"/>
             </column>
         </createTable>
 
-        <createSequence sequenceName="room_id_seq" startValue="1" incrementBy="1" />
+        <createSequence sequenceName="room_id_seq" startValue="1" incrementBy="1"/>
     </changeSet>
 
     <changeSet id="sessions-table" author="kuz-alex">
@@ -47,23 +47,23 @@
             <column name="name" type="varchar(255)"/>
             <column name="duration_min" type="int" defaultValue="90"/>
             <column name="user_id" type="bigint">
-                <constraints nullable="false" foreignKeyName="fk_sessions_user" references="app_users(id)" />
+                <constraints nullable="false" foreignKeyName="fk_sessions_user" references="app_users(id)"/>
             </column>
             <column name="started_at" type="timestamp" defaultValue="now()">
                 <constraints nullable="false"/>
             </column>
         </createTable>
 
-        <createSequence sequenceName="session_id_seq" startValue="1" incrementBy="1" />
+        <createSequence sequenceName="session_id_seq" startValue="1" incrementBy="1"/>
     </changeSet>
 
     <changeSet id="app-user-rooms-table" author="kuz-alex">
         <createTable tableName="app_users_rooms">
             <column name="app_user_id" type="bigint">
-                <constraints nullable="false" foreignKeyName="fk_user_rooms_user" references="app_users(id)" />
+                <constraints nullable="false" foreignKeyName="fk_user_rooms_user" references="app_users(id)"/>
             </column>
             <column name="room_id" type="bigint">
-                <constraints nullable="false" foreignKeyName="fk_user_rooms_room" references="rooms(id)" />
+                <constraints nullable="false" foreignKeyName="fk_user_rooms_room" references="rooms(id)"/>
             </column>
             <column name="created_at" type="timestamp" defaultValue="now()">
                 <constraints nullable="false"/>
@@ -99,4 +99,56 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="sessions-to-time-entries" author="kuz-alex">
+        <renameTable oldTableName="sessions" newTableName="time_entries"/>
+
+        <addColumn tableName="time_entries">
+            <column name="stoppedAt" type="timestamp"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="column-name-fix" author="kuz-alex">
+        <renameColumn tableName="time_entries" oldColumnName="stoppedAt" newColumnName="stopped_at"
+                      columnDataType="timestamp"/>
+    </changeSet>
+
+    <changeSet id="modify-created-at-column" author="kuz-alex">
+        <sql>
+            ALTER TABLE time_entries ALTER COLUMN created_at TYPE timestamp without time zone USING created_at AT TIME
+            ZONE 'UTC';
+            ALTER TABLE time_entries ALTER COLUMN created_at SET DEFAULT (now() AT TIME ZONE 'UTC');
+
+            ALTER TABLE time_entries ALTER COLUMN started_at TYPE timestamp without time zone USING created_at AT TIME
+            ZONE 'UTC';
+            ALTER TABLE time_entries ALTER COLUMN started_at SET DEFAULT (now() AT TIME ZONE 'UTC');
+
+            ALTER TABLE time_entries ALTER COLUMN stopped_at TYPE timestamp without time zone USING created_at AT TIME
+            ZONE 'UTC';
+        </sql>
+    </changeSet>
+
+    <changeSet id="modify-stopped-at-123" author="kuz-alex">
+        <sql>
+            ALTER TABLE time_entries ALTER COLUMN stopped_at TYPE timestamp with time zone USING stopped_at AT TIME ZONE 'UTC';
+        </sql>
+    </changeSet>
+
+    <changeSet id="modify-timezones-surely-this-time-it's-configured" author="kuz-alex">
+        <sql>
+            ALTER TABLE time_entries ALTER COLUMN created_at TYPE timestamp with time zone USING created_at AT TIME ZONE 'UTC';
+            ALTER TABLE time_entries ALTER COLUMN started_at TYPE timestamp with time zone USING created_at AT TIME ZONE 'UTC';
+        </sql>
+    </changeSet>
+
+    <changeSet id="modify-timezones-losing-sanity-and-giving-up" author="kuz-alex">
+        <sql>
+            ALTER TABLE time_entries ALTER COLUMN created_at TYPE timestamp without time zone USING created_at AT TIME ZONE 'UTC';
+            ALTER TABLE time_entries ALTER COLUMN created_at SET DEFAULT (now() AT TIME ZONE 'UTC');
+
+            ALTER TABLE time_entries ALTER COLUMN started_at TYPE timestamp without time zone USING created_at AT TIME ZONE 'UTC';
+            ALTER TABLE time_entries ALTER COLUMN started_at SET DEFAULT (now() AT TIME ZONE 'UTC');
+
+            ALTER TABLE time_entries ALTER COLUMN stopped_at TYPE timestamp with time zone USING created_at AT TIME ZONE 'UTC';
+        </sql>
+    </changeSet>
 </databaseChangeLog>
